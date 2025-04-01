@@ -3,11 +3,10 @@ from typing import Annotated
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Field, Session, CheckConstraint, SQLModel, create_engine, select, desc
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timezone, timedelta
+from random import randint
 
-origins = [
-    "http://localhost:5173"
-]
+origins = ["http://localhost:5173"]
 
 class User(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -37,6 +36,21 @@ def get_session():
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
+def seed_tables() -> None:
+    with Session(engine) as session:
+        # Clear existing data
+        session.query(Mood).delete()
+
+        moods = []
+        for i in range(0, 100):
+            moods.append(Mood(
+                user_id=2,
+                created_at_date=date.fromtimestamp((datetime.now(timezone.utc) - timedelta(days=i+1)).timestamp()),
+                mood=randint(1,5)
+            ))
+        session.add_all(moods)
+        session.commit()
+
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -48,6 +62,7 @@ app.add_middleware(
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
+    seed_tables()
 
 @app.get("/")
 def root(session: SessionDep):
