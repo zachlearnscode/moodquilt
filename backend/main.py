@@ -66,17 +66,19 @@ def on_startup():
 
 @app.get("/")
 def root(session: SessionDep):
-    # Get today's date
-    # Search DB for user log's (up to) 10 days before
-    # Return list to FE
-    today = datetime.today()
-    statement = select(Mood).order_by(desc(Mood.created_at_date))
+    today = date.today()
+    statement = select(Mood).order_by(Mood.created_at_date)
     results = session.exec(statement).all()
 
-    # print(results.created_at.year)
-    # return results.created_at.year
-    return results
+    weeks = []
+    current_week = []
+    for mood in results:
+        current_week.append(mood)
+        if mood.created_at_date.weekday() == 6:
+            weeks.append(current_week)
+            current_week = []
 
+    return weeks
 
 @app.post("/log-mood")
 def log_mood(mood: Mood, session: SessionDep) -> Mood:
