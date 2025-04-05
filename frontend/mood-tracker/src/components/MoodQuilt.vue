@@ -2,25 +2,18 @@
   <div v-if="initializing">Initializing...</div>
   <div
     v-else
-    v-for="week in moods"
-    :key="index"
-    style="display: flex;"
+    v-for="(week, weekIndex) in moods"
+    :key="weekIndex"
+    class="flex max-w-[750px]"
   >
-    <div
-      v-for="day in week"
-      :key="index"
-      class="square"
-      :style="{ 'background-color': getSquareColor(day) }"
-    >
-      {{ day.created_at_date }}
-    </div>
-    <template v-if="week.length < 7">
       <div
-        v-for="n in 7 - week.length"
-        :key="n"
-        class="square"
-      />
-    </template>
+        v-for="(day, dayIndex) in week"
+        :key="dayIndex"
+        :class="getSquareColor(day?.mood)"
+        class="grow aspect-square w-full min-w-[50px] p-1"
+      >
+        {{ day?.mood || ''}}
+      </div>
   </div>
 </template>
 
@@ -28,7 +21,7 @@
 import { ref, onBeforeMount } from 'vue';
 import dayjs from "dayjs";
 
-const moods = ref([]);
+const moods = ref(null);
 
 const initializing = ref(true);
 onBeforeMount(async () => {
@@ -37,33 +30,29 @@ onBeforeMount(async () => {
     const data = await res.json();
 
     moods.value = data;
+    let latestWeek = moods.value[moods.value.length - 1];
+    if (latestWeek.length < 7) {
+      latestWeek.push(...Array(7 - latestWeek.length))
+    }
   } finally {
     initializing.value = false;
   }
 })
 
-const getSquareColor = ({ mood }) => {
+const getSquareColor = (mood) => {
   switch (mood) {
     case 1:
-      return "#848C8E"
+      return "bg-violet-500 text-violet-300"
     case 2:
-      return "#435058"
+      return "bg-blue-500 text-blue-300"
     case 3:
-      return "#DCF763"
+      return "bg-emerald-500 text-emerald-300"
     case 4:
-      return "#BFB7B6"
+      return "bg-yellow-500 text-yellow-300"
     case 5:
-      return "#F1F2EE"
+      return "bg-red-500 text-red-300"
     default:
-      return "#FFFFFF"
+      return "bg-white-500 text-white-300"
   }
 }
 </script>
-
-<style scoped>
-.square {
-  flex: 1;                      /* Flexible sizing */
-  aspect-ratio: 1 / 1;           /* Maintain square shape */
-  min-width: 50px;              /* Prevent squares from getting too small */
-}
-</style>
