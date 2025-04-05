@@ -41,7 +41,7 @@ def seed_tables() -> None:
         session.query(Mood).delete()
 
         moods = []
-        for i in range(0, 100):
+        for i in range(0, 1000):
             if choice([0, 1]) == 1:
               moods.append(Mood(
                   user_id=2,
@@ -65,18 +65,17 @@ def on_startup():
     create_db_and_tables()
     seed_tables()
 
-@app.get("/")
+@app.get("/moods")
 def root(session: SessionDep):
-    today = date.today() - timedelta(days=3)
-    last_possible_entry_date = today - timedelta(days=1)
+    today = date.today()
 
     statement = select(Mood).order_by(Mood.created_at_date)
     results = session.exec(statement).all()
 
     weeks = []
     working_week = []
-    for i in range(28 + last_possible_entry_date.weekday()):
-        d = last_possible_entry_date - timedelta(days=i)
+    for i in range(500 + today.weekday()):
+        d = today - timedelta(days=i)
 
         for entry in results:
             if entry.created_at_date == d:
