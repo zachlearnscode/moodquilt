@@ -1,19 +1,20 @@
 <template>
   <div v-if="initializing">Initializing...</div>
-  <div
-    v-else
-    v-for="(week, weekIndex) in moods"
-    :key="weekIndex"
-    class="flex max-w-[750px]"
-  >
-      <div
-        v-for="(day, dayIndex) in week"
-        :key="dayIndex"
-        :class="getSquareColor(day?.mood)"
-        class="grow aspect-square w-full min-w-[50px] p-1"
-      >
-        {{ day?.mood || ''}}
-      </div>
+  <div v-else class="border">
+    <div
+      v-for="(week, weekIndex) in moods"
+      :key="weekIndex"
+      class="flex max-w-[750px]"
+    >
+        <div
+          v-for="(day, dayIndex) in week"
+          :key="dayIndex"
+          :class="getSquareColor(day?.mood)"
+          class="grow aspect-square w-full min-w-[50px] p-1"
+        >
+          {{ day?.mood || ''}}
+        </div>
+    </div>
   </div>
 </template>
 
