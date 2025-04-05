@@ -1,7 +1,5 @@
-<script setup>import { RouterLink, RouterView } from 'vue-router';</script>
-
 <template>
-  <header>
+  <header class="sticky top-0 bg-amber-100">
     <div class="wrapper">
       <RouterLink to="/">
         <h1>MoodQuilt</h1>
@@ -13,8 +11,14 @@
     </div>
   </header>
 
-  <RouterView />
+  <div class="flex justify-center">
+    <RouterView />
+  </div>
 </template>
+
+<script setup>
+  import { RouterLink, RouterView } from 'vue-router';
+</script>
 
 <style scoped>
 header {
