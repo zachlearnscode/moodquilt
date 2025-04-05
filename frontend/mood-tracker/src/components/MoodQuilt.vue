@@ -1,19 +1,27 @@
 <template>
   <div v-if="initializing">Initializing...</div>
-  <div v-else>{{ moods }}</div>
-  <!-- <div
+  <div
     v-else
-    v-for="(week, index) in moods"
+    v-for="week in moods"
     :key="index"
     style="display: flex;"
   >
     <div
-      v-for="(mood, index) in week"
+      v-for="day in week"
       :key="index"
       class="square"
-      :style="{ 'background-color': getSquareColor(mood) }"
-    />
-  </div> -->
+      :style="{ 'background-color': getSquareColor(day) }"
+    >
+      {{ day.created_at_date }}
+    </div>
+    <template v-if="week.length < 7">
+      <div
+        v-for="n in 7 - week.length"
+        :key="n"
+        class="square"
+      />
+    </template>
+  </div>
 </template>
 
 <script setup>
@@ -26,7 +34,9 @@ const initializing = ref(true);
 onBeforeMount(async () => {
   try {
     const res = await fetch(import.meta.env.VITE_API_URL);
-    moods.value = await res.json();
+    const data = await res.json();
+
+    moods.value = data;
   } finally {
     initializing.value = false;
   }

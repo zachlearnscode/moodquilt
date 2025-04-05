@@ -1,5 +1,5 @@
 <template>
-  <div style="max-width: 500px;">
+  <div style="max-width: 750px;">
     <MoodQuilt />
   </div>
 </template>
