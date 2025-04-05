@@ -4,7 +4,7 @@ from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Field, Session, CheckConstraint, SQLModel, create_engine, select, desc
 from datetime import date, datetime, timezone, timedelta
-from random import randint
+from random import randint, choice
 
 origins = ["http://localhost:5173"]
 
@@ -18,7 +18,6 @@ class Mood(SQLModel, table=True):
     last_modified_datetime: datetime | None = Field(default=datetime.now(timezone.utc))
     mood: int = Field(sa_column_args=[CheckConstraint("mood BETWEEN 1 AND 5")])
     note: str | None
-
 
 sqlite_file_name = "database.db"
 sqlite_url = f"sqlite:///{sqlite_file_name}"
@@ -43,11 +42,13 @@ def seed_tables() -> None:
 
         moods = []
         for i in range(0, 100):
-            moods.append(Mood(
-                user_id=2,
-                created_at_date=date.fromtimestamp((datetime.now(timezone.utc) - timedelta(days=i+1)).timestamp()),
-                mood=randint(1,5)
-            ))
+            if choice([0, 1]) == 1:
+              moods.append(Mood(
+                  user_id=2,
+                  created_at_date=date.fromtimestamp(((datetime.now(timezone.utc) - timedelta(days=3)) - timedelta(days=i+1)).timestamp()),
+                  mood=randint(1,5)
+              ))
+
         session.add_all(moods)
         session.commit()
 
@@ -66,17 +67,27 @@ def on_startup():
 
 @app.get("/")
 def root(session: SessionDep):
-    today = date.today()
+    today = date.today() - timedelta(days=3)
+    last_possible_entry_date = today - timedelta(days=1)
+
     statement = select(Mood).order_by(Mood.created_at_date)
     results = session.exec(statement).all()
 
     weeks = []
-    current_week = []
-    for mood in results:
-        current_week.append(mood)
-        if mood.created_at_date.weekday() == 6:
-            weeks.append(current_week)
-            current_week = []
+    working_week = []
+    for i in range(28 + last_possible_entry_date.weekday()):
+        d = last_possible_entry_date - timedelta(days=i)
+
+        for entry in results:
+            if entry.created_at_date == d:
+                working_week.insert(0, entry)
+                break
+        else:
+          working_week.insert(0, Mood(mood=0, created_at_date=d))
+
+        if working_week[0].created_at_date.weekday() == 6:
+            weeks.insert(0, working_week)
+            working_week = []
 
     return weeks
 
