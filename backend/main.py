@@ -90,37 +90,13 @@ def root(session: SessionDep):
 
     return weeks
 
-@app.post("/log-mood")
+@app.post("/log")
 def log_mood(mood: Mood, session: SessionDep) -> Mood:
+    mood.created_at_date = date.fromtimestamp(datetime.strptime(
+        mood.created_at_date[:-1],
+        "%Y-%m-%dT%H:%M:%S.%f"
+      ).timestamp())
     session.add(mood)
     session.commit()
     session.refresh(mood)
     return mood
-
-
-# @app.get("/heroes/")
-# def read_heroes(
-#     session: SessionDep,
-#     offset: int = 0,
-#     limit: Annotated[int, Query(le=100)] = 100,
-# ) -> list[Hero]:
-#     heroes = session.exec(select(Hero).offset(offset).limit(limit)).all()
-#     return heroes
-
-
-# @app.get("/heroes/{hero_id}")
-# def read_hero(hero_id: int, session: SessionDep) -> Hero:
-#     hero = session.get(Hero, hero_id)
-#     if not hero:
-#         raise HTTPException(status_code=404, detail="Hero not found")
-#     return hero
-
-
-# @app.delete("/heroes/{hero_id}")
-# def delete_hero(hero_id: int, session: SessionDep):
-#     hero = session.get(Hero, hero_id)
-#     if not hero:
-#         raise HTTPException(status_code=404, detail="Hero not found")
-#     session.delete(hero)
-#     session.commit()
-#     return {"ok": True}
